@@ -1,0 +1,29 @@
+{
+  "name": "pokepedia-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pokepedia-Plus/Pokepedia-BackEnd.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Pokepedia-Plus/Pokepedia-BackEnd/issues"
+  },
+  "homepage": "https://github.com/Pokepedia-Plus/Pokepedia-BackEnd#readme",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "knex": "^2.4.2",
+    "nodemon": "^2.0.22",
+    "pg": "^8.10.0"
+  }
+}
