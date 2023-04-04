@@ -5,20 +5,21 @@
  */
 module.exports = {
 
-  development: {
-    client: 'postgresql',
-    connection: {
-      database: "pokepedia",
-      user: "postgres",
-      password: "damian",
-    },
-    pool: {
-      min: 2,
-      max: 10
-    },
-    migrations: {
-      tableName: 'knex_migrations'
+    development: {
+      client: 'postgresql',
+      connection: {
+        database: "pokepedia",
+        user: "postgres",
+        password: "damian",
+      },
+      pool: {
+        min: 2,
+        max: 10
+      },
+      migrations: {
+        tableName: 'knex_migrations'
+      }
     }
-  }
-
-};
+  
+  };
+  
