@@ -140,7 +140,7 @@ async function sendingThePokemon(pokemon_id,name, types, height, moves, front_sp
 //   pool.end();
 // });
 
-const port = 4000 || process.env.PORT;
+const port =   process.env.PORT || 4000;
 app.listen(port, () => {
   console.log("the server is working");
 });
