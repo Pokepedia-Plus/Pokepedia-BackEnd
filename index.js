@@ -1,9 +1,8 @@
-require("dotenv").config();
 const express = require("express");
 const app = express();
 const cors = require("cors");
 const pool = require("./db");
-const fetch = require('node-fetch');
+require("dotenv").config();
 // const AuthRouter = require("./routes/router");
 
 //middleware
