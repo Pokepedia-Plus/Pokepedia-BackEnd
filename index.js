@@ -125,21 +125,33 @@ async function sendingThePokemon(pokemon_id,name, types, height, moves, front_sp
   await pool.query('INSERT INTO pokemon (pokemon_id, name, types, height, moves, front_sprite, back_sprite, dreamworld_sprite, stats, weight) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [pokemon_id,name, types, height, moves, front_sprite, back_sprite, dreamworld_sprite, stats, weight]);
 }
 
-// pool.query(`
-//   CREATE TABLE IF NOT EXISTS users (
-//     id SERIAL PRIMARY KEY,
-//     name VARCHAR(50),
-//     email VARCHAR(50) UNIQUE NOT NULL,
-//     password VARCHAR(100) NOT NULL
-//   );
-// `, (err, res) => {
-//   if (err) {
-//     console.error(err);
-//   } else {
-//     console.log('Table created successfully');
-//   }
-//   pool.end();
-// });
+pool.query(`
+  CREATE TABLE IF NOT EXISTS pokemon (
+    id SERIAL PRIMARY KEY,
+    pokemon_id INTEGER UNIQUE,
+    name VARCHAR(255),
+    abilities VARCHAR(255),
+    types VARCHAR(255),
+    appearances VARCHAR(255),
+    height FLOAT,
+    moves VARCHAR(5000),
+    front_sprite VARCHAR(255),
+    back_sprite VARCHAR(255),
+    dreamworld_sprite VARCHAR(255),
+    stats VARCHAR(2000),
+    weight FLOAT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  );
+`, (err, res) => {
+  if (err) {
+    console.error(err);
+  } else {
+    console.log('Table created successfully');
+  }
+  pool.end();
+});
+
 
 const port =   process.env.PORT || 4000;
 app.listen(port, () => {
