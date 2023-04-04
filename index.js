@@ -91,27 +91,28 @@ app.get("/pokemonsData", async (req, res) => {
 
 app.get("/insertPokemon", async (req, res) => {
   try {
-    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
-    const data = await response.json();
-
-    for (let pokemon of data.results) {
-      await fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.name}`)
-      .then((res) => res.json())
-        .then((data) => {
-          let name, pokemon_id, types, height, moves, front_sprite, back_sprite, dreamworld_sprite,stats,weight
-          pokemon_id = data.id
-          name = pokemon.name
-          dreamworld_sprite = data.sprites.other.dream_world.front_default
-          height = data.height
-          moves = data.moves.map((move) => move.move.name)
-          front_sprite = data.sprites.front_default;
-          back_sprite = data.sprites.back_default;
-          stats = data.stats.map((stat) => ({ name: stat.stat.name, base_stat: stat.base_stat }))
-          types = data.types.map((type) => type.type.name)
-          weight = data.weight
-          sendingThePokemon(pokemon_id,name, types, height, moves, front_sprite, back_sprite, dreamworld_sprite, stats, weight)
-        });
-      }
+fetch('https://pokeapi.co/api/v2/pokemon?limit=151')
+.then(res => res.json())
+.then(data => {
+  for (let pokemon of data.results) {
+    fetch(`https://pokeapi.co/api/v2/pokemon/${pokemon.name}`)
+    .then((res) => res.json())
+      .then((data) => {
+        let name, pokemon_id, types, height, moves, front_sprite, back_sprite, dreamworld_sprite,stats,weight
+        pokemon_id = data.id
+        name = pokemon.name
+        dreamworld_sprite = data.sprites.other.dream_world.front_default
+        height = data.height
+        moves = data.moves.map((move) => move.move.name)
+        front_sprite = data.sprites.front_default;
+        back_sprite = data.sprites.back_default;
+        stats = data.stats.map((stat) => ({ name: stat.stat.name, base_stat: stat.base_stat }))
+        types = data.types.map((type) => type.type.name)
+        weight = data.weight
+        sendingThePokemon(pokemon_id,name, types, height, moves, front_sprite, back_sprite, dreamworld_sprite, stats, weight)
+      });
+    }
+})
 
     res.status(200).send('Successfully inserted Pokemon names to the database.');
   } catch (error) {
