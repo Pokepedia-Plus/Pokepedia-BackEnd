@@ -3,6 +3,11 @@ const app = express();
 const cors = require("cors");
 const pool = require("./db");
 const bodyParser = require('body-parser');
+const { createClient } = require("@supabase/supabase-js");
+
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
+const supabaseKey = process.env.REACT_APP_ANON_KEY
+const supabase = createClient(supabaseUrl, supabaseKey);
 require("dotenv").config();
 // const AuthRouter = require("./routes/router");
 
@@ -16,15 +21,113 @@ app.use(bodyParser.json());
 app.get("/", (req, res) => {
   res.send("hello").status(200);
 });
+
+
+app.get('/checkallpokemon', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('pokemon')
+      .select('*')
+    
+    if (error) throw error
+    
+    res.status(200).json(data)
+  } catch (error) {
+    console.error(error)
+    res.status(500).json({ error: 'Something went wrong!' })
+  }
+})
+
+// app.get("/pokemons", async (req, res) => {
+//   try {
+//     const { rows } = await pool.query('SELECT name FROM pokemon ORDER BY id');
+//     res.json(rows);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send('Error fetching Pokemon data from database.');
+//   }
+// });
 app.get("/pokemons", async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT name FROM pokemon ORDER BY id');
-    res.json(rows);
+    const { data, error } = await supabase
+      .from('pokemon')
+      .select('name')
+      .order('id');
+    if (error) {
+      console.error(error);
+      res.status(500).send('Error fetching Pokemon data from database.');
+    } else {
+      console.log(data)
+      res.json(data);
+    }
   } catch (error) {
     console.error(error);
     res.status(500).send('Error fetching Pokemon data from database.');
   }
 });
+
+// app.get("/pokemonsData", async (req, res) => {
+//   const name = req.query.name;
+
+//   if (!name) {
+//     return res.status(400).send("Missing search term");
+//   }
+
+//   try {
+//     const query = {
+//       text: "SELECT * FROM pokemon WHERE name = $1",
+//       values: [name],
+//     };
+
+//     const result = await pool.query(query);
+
+//     if (result.rows.length === 0) {
+//       return res.status(404).send("Pokemon not found");
+//     }
+
+//     const pokemon = result.rows[0];
+
+//     let newS = pokemon.stats.replace(/{|}|"/g, "");
+//     let SList = newS.split(",");
+
+//     const jsonS = JSON.stringify(SList).replace(/\\\\/g, "");
+//     const resultS = JSON.parse(jsonS);
+
+//     let newM = pokemon.moves.replace(/{|}|"/g, "");
+//     let MList = newM.split(",");
+//     const jsonM = JSON.stringify(MList).replace(/\\\\/g, "");
+//     const resultM = JSON.parse(jsonM);
+
+//     let newT = pokemon.types.replace(/{|}|"/g, "");
+//     let TList = newT.split(",");
+
+//     let stats = [];
+//     for (let i = 0; i < resultS.length; i += 2) {
+//       const name = resultS[i].split(":")[1];
+//       const base_stat = resultS[i + 1].split(":")[1];
+//       stats.push({ name, base_stat });
+//     }
+
+//     const formattedPokemon = {
+//       id: pokemon.id,
+//       name: pokemon.name,
+//       types: TList,
+//       back_sprite: pokemon.back_sprite,
+//       dreamworld_sprite: pokemon.dreamworld_sprite,
+//       frontSprite: pokemon.front_sprite,
+//       height: pokemon.height,
+//       pokemonId: pokemon.id,
+//       moves: resultM,
+//       weight: pokemon.weight,
+//       stats: stats,
+//     };
+
+//     res.json(formattedPokemon);
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).send("Error fetching Pokemon data from database.");
+//   }
+// });
 
 app.get("/pokemonsData", async (req, res) => {
   const name = req.query.name;
@@ -34,51 +137,36 @@ app.get("/pokemonsData", async (req, res) => {
   }
 
   try {
-    const query = {
-      text: "SELECT * FROM pokemon WHERE name = $1",
-      values: [name],
-    };
+    const { data: pokemon, error } = await supabase
+      .from("pokemon")
+      .select()
+      .eq("name", name)
+      .single();
 
-    const result = await pool.query(query);
-
-    if (result.rows.length === 0) {
+    if (error) {
+      console.error(error);
+      return res.status(500).send("Error fetching Pokemon data from database.");
+    }
+    if (!pokemon) {
       return res.status(404).send("Pokemon not found");
     }
 
-    const pokemon = result.rows[0];
-
-    let newS = pokemon.stats.replace(/{|}|"/g, "");
-    let SList = newS.split(",");
-    const jsonS = JSON.stringify(SList).replace(/\\\\/g, "");
-    const resultS = JSON.parse(jsonS);
-
-    let newM = pokemon.moves.replace(/{|}|"/g, "");
-    let MList = newM.split(",");
-    const jsonM = JSON.stringify(MList).replace(/\\\\/g, "");
-    const resultM = JSON.parse(jsonM);
-
-    let newT = pokemon.types.replace(/{|}|"/g, "");
-    let TList = newT.split(",");
-
-    let stats = [];
-    for (let i = 0; i < resultS.length; i += 2) {
-      const name = resultS[i].split(":")[1];
-      const base_stat = resultS[i + 1].split(":")[1];
-      stats.push({ name, base_stat });
-    }
+    let stats = JSON.parse(pokemon.stats.replace(/'/g, '"')).map(({ name, base_stat }) => ({ name, base_stat }));
+    let types = JSON.parse(pokemon.types.replace(/'/g, '"'));
+    let moves = JSON.parse(pokemon.moves.replace(/'/g, '"'));
 
     const formattedPokemon = {
       id: pokemon.id,
       name: pokemon.name,
-      types: TList,
+      types,
       back_sprite: pokemon.back_sprite,
       dreamworld_sprite: pokemon.dreamworld_sprite,
       frontSprite: pokemon.front_sprite,
       height: pokemon.height,
       pokemonId: pokemon.id,
-      moves: resultM,
+      moves,
       weight: pokemon.weight,
-      stats: stats,
+      stats,
     };
 
     res.json(formattedPokemon);
@@ -93,7 +181,9 @@ app.get("/pokemonsData", async (req, res) => {
 
 app.get("/insertPokemon", async (req, res) => {
   try {
-    const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=151');
+    let num = 1
+    while(num <= 10){
+    const response = await fetch(`https://pokeapi.co/api/v2/pokemon-species/${num}/`);
     const data = await response.json();
 
     for (let pokemon of data.results) {
@@ -114,8 +204,9 @@ app.get("/insertPokemon", async (req, res) => {
 
       await sendingThePokemon(pokemon_id,name, types, height, moves, front_sprite, back_sprite, dreamworld_sprite, stats, weight);
     }
-
-    res.status(200).send('Successfully inserted Pokemon names to the database.');
+num ++
+  }
+  res.status(200).send('Successfully inserted Pokemon names to the database.');
   } catch (error) {
     console.error(error);
     res.status(500).send('Error inserting Pokemon names into the database.');
@@ -123,7 +214,10 @@ app.get("/insertPokemon", async (req, res) => {
 });
 
 async function sendingThePokemon(pokemon_id,name, types, height, moves, front_sprite, back_sprite, dreamworld_sprite, stats, weight){
-  await pool.query('INSERT INTO pokemon (pokemon_id, name, types, height, moves, front_sprite, back_sprite, dreamworld_sprite, stats, weight) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)', [pokemon_id,name, types, height, moves, front_sprite, back_sprite, dreamworld_sprite, stats, weight]);
+  const { data, error } = await supabase.from('pokemon').insert([{ pokemon_id, name, types, height, moves, front_sprite, back_sprite, dreamworld_sprite, stats, weight }], { returning: "minimal" });
+  if (error) {
+    throw error;
+  }
 }
 
 
